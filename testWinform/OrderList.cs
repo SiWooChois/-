@@ -51,11 +51,13 @@ namespace testWinform
             return order_Array;
         }
 
+        // 전체 날짜 파일들에서 가져오기
         public Order[] getOrderArray()
         {
             List<Order> orderList = new List<Order>();
 
-            foreach (var filePath in filePaths)
+            var sortedFilePaths = filePaths.OrderByDescending(Path.GetFileNameWithoutExtension);
+            foreach (var filePath in sortedFilePaths)
             {
                 if (File.Exists(filePath))
                 {
@@ -83,7 +85,6 @@ namespace testWinform
                     }
                 }
             }
-
             return orderList.ToArray();
         }
     }

@@ -15,7 +15,7 @@ namespace testWinform
 {
     internal partial class AutoOrderUI : Form
     {
-        
+
         // 초기화 할 field
         private OrderSystem orderSystem; // 발주 시스템
         private searchProductSystem searchProductSystem; // 검색 시스템
@@ -23,14 +23,14 @@ namespace testWinform
         string selectedDate = "-";
         int count;
         // 기본 열 추가할 배열
-        string[] orderColumnNames = {"","NO", "상품코드", "상품명", "거래처", "규격", "현재수량", "빌주수량", "단가", "공급가액", "부가세", "합계", "발주 일자" };
+        string[] orderColumnNames = { "", "NO", "상품코드", "상품명", "거래처", "규격", "현재수량", "빌주수량", "단가", "공급가액", "부가세", "합계", "발주 일자" };
         public AutoOrderUI()
         {
             InitializeComponent();
             //객체 초기화는 필수, 안 하면 개체 참조 오류 뜸
             orderSystem = new OrderSystem(this);
             searchProductSystem = new searchProductSystem(this);
-            condition = new ConditionalOrder(0,0,0,0);
+            condition = new ConditionalOrder(0, 0, 0, 0);
             selectedDate = order_Date.Value.ToString("yyyy-MM-dd");
             setCondition(); // 발주 조건 가져와서 세팅
             showOrderList(orderColumnNames, selectedDate); // 발주 목록 표시 
@@ -55,7 +55,7 @@ namespace testWinform
             // 기본적으로 보여지는 orderList 형식
             if (columnNames.Length == 13)
             {
-                int[] columnWidth = {0, 37, 100, 110, 112, 60, 80, 80, 80, 90, 90, 92, 160 };
+                int[] columnWidth = { 0, 37, 100, 110, 112, 60, 80, 80, 80, 90, 90, 92, 160 };
                 // 배열 만큼 열 생성
                 for (int i = 0; i < columnNames.Length; i++)
                 {
@@ -123,28 +123,29 @@ namespace testWinform
             string totalsupplyValue = "";
             string totalVAT = "";
             string totalAmount = "";
-            if(count == 0)
-            {
-                totalsupplyValue = totalItem.SubItems[1].Text;
-                totalVAT = totalItem.SubItems[2].Text;
-                totalAmount = totalItem.SubItems[3].Text;
-                count++;
-            }
-            if (total_ListView.SelectedItems.Count > 0)
-            {
-                totalsupplyValue = totalItem.SubItems[1].Text;
-                totalVAT = totalItem.SubItems[2].Text;
-                totalAmount = totalItem.SubItems[3].Text;
-            }               
+            totalsupplyValue = totalItem.SubItems[1].Text;
+            totalVAT = totalItem.SubItems[2].Text;
+            totalAmount = totalItem.SubItems[3].Text;
+            //if(count == 0)
+            //{
+            //    totalsupplyValue = totalItem.SubItems[1].Text;
+            //    totalVAT = totalItem.SubItems[2].Text;
+            //    totalAmount = totalItem.SubItems[3].Text;
+            //    count++;
+            //}
+            //if (total_ListView.SelectedItems.Count > 0)
+            //{
+
+            //}               
 
             string[] totalValue = { "", "합계", totalsupplyValue, totalVAT, totalAmount };
-            
+
             int[] total_column_width = { 0, 660, 90, 90, 92 };
             foreach (ListViewItem item in items)
             {
                 order_listView.Items.Add(item);
             }
-            for(int i=0; i < 5; i++)
+            for (int i = 0; i < 5; i++)
             {
                 ColumnHeader column = new ColumnHeader();
                 column.TextAlign = HorizontalAlignment.Center;
@@ -183,7 +184,7 @@ namespace testWinform
         private void manufacturing_company_textBox_TextChanged(object sender, EventArgs e)
         {
             // 반복 시 보여지는 목록 리스트 열 헤더
-            string[] manufacturingColumnNames = { "","거래처", "상품코드", "상품명", "규격", "단가", "재고수량", "공급업체", "판매", "품절" };
+            string[] manufacturingColumnNames = { "", "거래처", "상품코드", "상품명", "규격", "단가", "재고수량", "공급업체", "판매", "품절" };
 
             // 검색어가 입력되었을 경우에만 showOrderList 메서드 호출
             if (!string.IsNullOrEmpty(manufacturing_company_textBox.Text))
@@ -198,14 +199,14 @@ namespace testWinform
         }
         public string[] setProductColumn()
         {
-            string[] productColumnNames = { "","상품코드", "상품명", "규격", "단가", "재고수량", "공급업체", "거래처", "판매", "품절" };
+            string[] productColumnNames = { "", "상품코드", "상품명", "규격", "단가", "재고수량", "공급업체", "거래처", "판매", "품절" };
             return productColumnNames;
         }
         // 상품명으로 검색
         private void product_Name_textBox_TextChanged(object sender, EventArgs e)
         {
             // 반복 시 보여지는 목록 리스트 열 헤더
-            
+
             // 검색어가 입력되지 않았을 경우 검색을 수행하지 않는다.
             if (!string.IsNullOrEmpty(product_Name_textBox.Text))
             {
@@ -227,7 +228,8 @@ namespace testWinform
                     MessageBox.Show("비어 있거나 최대 표시량 보다 값이 큽니다. 수량을 확인해 주세요.");
                     // 이전에 입력되어 있던 값으로 다시 설정
                     displayed_StockMin_textBox.Text = condition.getDisplayedStockMin().ToString();
-                }else
+                }
+                else
                 {
                     orderSystem.regConditionOrder(readCondition()); // 조건 저장
                     showOrderList(orderColumnNames, selectedDate); // 표시

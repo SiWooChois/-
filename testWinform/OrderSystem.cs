@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using Newtonsoft.Json;
 using System.IO;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Diagnostics;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
+using System.Globalization;
 
 namespace testWinform
 {
@@ -21,7 +21,7 @@ namespace testWinform
         private Product[] product_Array; // 상품 리스트 배열 선언
         private Order[] order_Array; // 발주 리스트 배열 선언
         private ConditionalOrder condition; // conditionalOrder 로 부터 조건 가져오기
-        
+
         private string filePathOrder = $"{DateTime.Now.ToString("yyyy-MM-dd")}.txt";  // 확장자 추가
         public OrderSystem(AutoOrderUI autoOrderUI)
         {
@@ -44,7 +44,7 @@ namespace testWinform
             int totalsupplyValue = 0; // 총 공급가액
             int totalVAT = 0; // 총 부가세
             int totalAmount = 0; // 총 합계
-            
+
             // 조건에 따른 발주 리스트 생성
             checkCodition(condition, Date);// 조건 검토
             ListViewItem[] orderListViewItems = new ListViewItem[product_Array.Length];
@@ -71,7 +71,7 @@ namespace testWinform
                 totalsupplyValue += supplyValuecalc; // 총 공급가액
                 totalVAT += orderVATcalc; // 총 부가세
                 totalAmount += orderTotalAmountcalc; //총 합계금액
-                
+
                 //  orderListViewItem 객체를 생성, 첫 번째 열에 orderID를 설정
                 ListViewItem orderListViewItem = new ListViewItem("");
 
@@ -132,16 +132,21 @@ namespace testWinform
                         // 조건에 맞는 것만 저장
                         product_Array[orderIndex] = product;
 
+                        DateTime latestOrderDate = DateTime.MinValue;
                         foreach (Order order in orderArray)
                         {
                             // 모든 발주일자로 저장된 발주 목록 파일에 저장된 상품명과 product_Array의 상품명이 일치하는 경우 날짜를 저장
                             if (order.getProductName() == product.getProductName())
                             {
-                                order_Array[orderIndex] = order;
-                                orderIndex++;
-                                break;  // 일치하는 주문을 찾았으므로 루프 종료
+                                DateTime orderDate = DateTime.ParseExact(order.getOrderDate(), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                                if (orderDate > latestOrderDate)
+                                {
+                                    latestOrderDate = orderDate;
+                                    order_Array[orderIndex] = order;
+                                }
                             }
                         }
+                        orderIndex++;
                     }
                 }
             }
@@ -151,6 +156,7 @@ namespace testWinform
             }
         }
 
+        // 발주
         public bool Order(ConditionalOrder condition, Order[] orders, int check)
         {
             try
@@ -160,20 +166,20 @@ namespace testWinform
                 string orderDetails = "";
 
                 bool hasOrderProcessed = false;
-
+                Order newOrder;
+                Order[] newOrders = new Order[orders.Length];
                 Order[] potentialOrders = new Order[orders.Length];
                 int potentialOrdersCount = 0;
 
                 for (int i = 0; i < orders.Length; i++)
                 {
-                    if (orders[i].getOrderQuantity() <= condition.getAutoStockMin())
+                    if (check == 0 && orders[i].getOrderQuantity() <= condition.getAutoStockMin())
                     {
-                        // check == 0 일 때, 자동 발주에 해당하는 상품 정보 출력
-                        if (check == 0)
-                        {
-                            orderDetails += $"상품명: {orders[i].getProductName()}, 발주 수량: {orders[i].getOrderQuantity()}, 합계: {orders[i].getTotalValue()}\n";
-                        }
-
+                        orderDetails += $"상품명: {orders[i].getProductName()}, 발주 수량: {orders[i].getOrderQuantity()}, 합계: {orders[i].getTotalValue()}\n";
+                        potentialOrders[potentialOrdersCount++] = orders[i];
+                    }
+                    else if (check == 1)  // 자동 발주가 아닌 경우 모든 상품을 발주 리스트에 추가
+                    {
                         potentialOrders[potentialOrdersCount++] = orders[i];
                     }
                 }
@@ -200,7 +206,11 @@ namespace testWinform
                     {
                         // 메시지 표시
                         DialogResult dialogResult = MessageBox.Show("같은 날짜의 발주서가 존재합니다. 변경하시겠습니까?", "발주서 변경 확인", MessageBoxButtons.YesNo);
-
+                        if (dialogResult == DialogResult.Yes)
+                        {
+                            // 예
+                            count = 1;
+                        }
                         if (dialogResult == DialogResult.No)
                         {
                             // "아니요"를 선택한 경우
@@ -214,7 +224,7 @@ namespace testWinform
                     Random rnd = new Random();
                     int RNo = rnd.Next(100000, 1000000);
 
-                    Order newOrder = new Order(
+                    newOrder = new Order(
                         RNo, // order_ID
                         potentialOrders[i].getProductName(), // 물품 명
                         potentialOrders[i].getStandard(), // 규격
@@ -225,11 +235,11 @@ namespace testWinform
                         potentialOrders[i].getTotalValue(), // 합계
                         order_Date // 발주 날짜
                     );
+                    newOrders[i] = newOrder;
                     // 발주서를 추가
-                    newOrder.addOrder(newOrder, count);
-                    hasOrderProcessed = true;
                 }
-
+                newOrders[0].addOrder(newOrders, count); // addOrder를 여기에서 호출
+                hasOrderProcessed = true;
                 if (hasOrderProcessed)
                 {
                     MessageBox.Show("발주가 완료되었습니다.");
@@ -246,6 +256,7 @@ namespace testWinform
                 return false;
             }
         }
+
 
 
         // 조건 수정

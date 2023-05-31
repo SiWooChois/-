@@ -80,26 +80,24 @@ namespace testWinform
             return orders;
         }
 
-        public void addOrder(Order addOrder, int count)
+        public void addOrder(Order[] orders, int count)
         {
-            Order[] orders = getOrdersFile();
-
-            // Order 배열 확장
-            Array.Resize(ref orders, orders.Length + 1);
-
-            // 새 Order 추가
-            orders[orders.Length - 1] = addOrder;
             if (count == 0)
             {
-                // 새 Order를 계속 파일에 추가
-                File.AppendAllText(filePathOrder, addOrder.ToString() + Environment.NewLine);
+                foreach (Order order in orders)
+                {
+                    // 새 Order를 계속 파일에 추가
+                    File.AppendAllText(filePathOrder, order.ToString() + Environment.NewLine);
+                }
             }
             else
             {
-                // 새 Order를 초기화
-                File.WriteAllText(filePathOrder, addOrder.ToString() + Environment.NewLine);
+                // 기존 내용을 모두 지우고 새 Orders로 초기화
+                string allOrdersText = string.Join(Environment.NewLine, orders.Select(o => o.ToString()));
+                File.WriteAllText(filePathOrder, allOrdersText + Environment.NewLine);
             }
         }
+
 
         public bool delOrder(Order delOrder)
         {
